@@ -1,6 +1,7 @@
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 const leaderboardElement = document.getElementById('leaderboard');
+let scoreDisplay = document.getElementById('scoreDisplay');  // 找到顯示分數的元素
 
 
 let snake = [[200, 200], [160, 200], [120, 200]];
@@ -91,20 +92,31 @@ function isCollision(head) {
     return snake.slice(1).some(segment => segment[0] === head[0] && segment[1] === head[1]);
 }
 
-// 繪製遊戲畫面
 function drawGame() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-
     snake.forEach((segment, index) => {
-        ctx.fillStyle = index === 0 ? "#228B22" : "#32CD32"; // 頭部和身體顏色不同
+        let gradient = ctx.createLinearGradient(segment[0], segment[1], segment[0] + cellSize, segment[1] + cellSize);
+        let colorValue = Math.floor(255 * (index / snake.length));
+        let startColor = `rgb(${0}, ${255 - colorValue}, ${0})`;
+        let endColor = `rgb(${0}, ${255 - colorValue * 0.5}, ${0})`;
+
+        gradient.addColorStop(0, startColor);
+        gradient.addColorStop(1, endColor);
+
+        ctx.fillStyle = gradient;
         ctx.fillRect(segment[0], segment[1], cellSize, cellSize);
     });
 
-
     ctx.fillStyle = "#FF0000";
     ctx.fillRect(food[0], food[1], cellSize, cellSize);
+
+    scoreDisplay.textContent = '分數: ' + score;
 }
+
+
+
+
 
 function showMessage(message) {
     ctx.clearRect(0, 0, canvas.width, canvas.height);

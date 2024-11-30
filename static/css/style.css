@@ -65,7 +65,7 @@ button[type="submit"]:hover {
 /* 游戏页面样式 */
 .title {
     text-align: center;
-    padding: 20px;
+    padding: 10px;
     background-color: #4682b4;
     color: white;
 }
@@ -83,7 +83,7 @@ button[type="submit"]:hover {
 
 .sidebar {
     position: absolute;
-    right: 20px;
+    right: 40px;
     top: 100px;
     width: 200px;
 }
@@ -102,4 +102,12 @@ button[type="submit"]:hover {
     margin: 5px 0;
     padding: 10px;
     border: 1px solid #ddd;
+}
+
+/* 顯示分數的樣式 */
+.score-display {
+    text-align: center;
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 10px;  /* 與畫布的距離 */
 }

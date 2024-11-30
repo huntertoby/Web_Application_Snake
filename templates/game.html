@@ -9,6 +9,10 @@
     <div class="title">
         <h1>貪吃蛇遊戲</h1>
     </div>
+    <!-- 顯示分數 -->
+    <div id="scoreDisplay" class="score-display">
+        分數: 0
+    </div>
     <div class="main">
         <canvas id="gameCanvas" width="400" height="400"></canvas>
     </div>
@@ -20,8 +24,5 @@
         var playerName = "{{ player_name }}";
     </script>
     <script src="{{ url_for('static', filename='js/game.js') }}"></script>
-
-
-
 </body>
 </html>
