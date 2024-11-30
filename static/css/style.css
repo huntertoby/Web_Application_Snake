@@ -1,0 +1,105 @@
+/* 通用样式 */
+body {
+    font-family: 'Microsoft JhengHei', Arial, sans-serif;
+    background-color: #f0f8ff;
+    margin: 0;
+}
+
+.container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh; /* 垂直居中 */
+}
+
+.login-box {
+    background-color: #ffffff;
+    padding: 40px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+.login-box h1 {
+    margin-bottom: 30px;
+    color: #333;
+}
+
+.input-group {
+    margin-bottom: 20px;
+    text-align: left;
+}
+
+.input-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-size: 18px;
+    color: #555;
+}
+
+.input-group input[type="text"] {
+    width: 100%;
+    padding: 10px 15px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+button[type="submit"] {
+    width: 100%;
+    padding: 12px 20px;
+    font-size: 18px;
+    color: #fff;
+    background-color: #4682b4;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+button[type="submit"]:hover {
+    background-color: #5a9bd6;
+}
+
+/* 其他页面样式保持不变 */
+
+/* 游戏页面样式 */
+.title {
+    text-align: center;
+    padding: 20px;
+    background-color: #4682b4;
+    color: white;
+}
+
+.main {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 20px;
+}
+
+#gameCanvas {
+    border: 2px solid #000;
+}
+
+.sidebar {
+    position: absolute;
+    right: 20px;
+    top: 100px;
+    width: 200px;
+}
+
+.sidebar h2 {
+    text-align: center;
+}
+
+#leaderboard {
+    list-style-type: none;
+    padding: 0;
+}
+
+#leaderboard li {
+    background-color: #fafafa;
+    margin: 5px 0;
+    padding: 10px;
+    border: 1px solid #ddd;
+}

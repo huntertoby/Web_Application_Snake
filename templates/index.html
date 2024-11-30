@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <title>貪吃蛇遊戲 - 登入</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <div class="login-box">
+            <h1>歡迎來到貪吃蛇遊戲</h1>
+            <form action="/" method="post">
+                <div class="input-group">
+                    <label for="player_name">請輸入您的姓名：</label>
+                    <input type="text" id="player_name" name="player_name" required>
+                </div>
+                <button type="submit">開始遊戲</button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>
