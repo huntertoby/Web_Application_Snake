@@ -30,27 +30,6 @@ def start_game():
     }
     return jsonify(state=state)
 
-@app.route('/move', methods=['POST'])
-def move():
-    data = request.get_json()
-    action = data['action']
-    game_state = session.get('game_state')
-    if not game_state:
-        return jsonify(error="Game not found"), 400
-
-    game = SnakeGame()
-    game.snake_pos = game_state["snake"]
-    game.snake_direction = game_state["direction"]
-    game.food_pos = game_state["food"]
-
-    state, reward, done = game.step(action)
-
-    session['game_state'] = {
-        "snake": state["snake"],
-        "food": state["food"],
-        "direction": game.snake_direction
-    }
-    return jsonify(state=state, reward=reward, done=done)
 
 @app.route('/submit_score', methods=['POST'])
 def submit_score():
