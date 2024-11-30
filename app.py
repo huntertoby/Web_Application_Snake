@@ -1,5 +1,4 @@
 from flask import Flask, render_template, request, jsonify, session
-from game_logic import SnakeGame
 from flask_session import Session
 
 app = Flask(__name__)
@@ -19,16 +18,7 @@ def index():
     return render_template('index.html')
 
 
-@app.route('/start_game', methods=['POST'])
-def start_game():
-    game = SnakeGame()
-    state = game.reset()
-    session['game_state'] = {
-        "snake": state["snake"],
-        "food": state["food"],
-        "direction": game.snake_direction
-    }
-    return jsonify(state=state)
+
 
 
 @app.route('/submit_score', methods=['POST'])

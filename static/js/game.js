@@ -1,6 +1,7 @@
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
-const scoreDisplay = document.getElementById('scoreDisplay');
+const leaderboardElement = document.getElementById('leaderboard');
+
 
 let snake = [[200, 200], [160, 200], [120, 200]];
 let food = [320, 200];
@@ -9,17 +10,17 @@ let currentDirection = 1;
 let gameLoop;
 let gameOver = false;
 let score = 0;
+let gameStarted = false;
 
 
 function startGame() {
     resetGame();
     gameLoop = setInterval(() => move(), 150);
     gameStarted = true; //
+
 }
 
-function updateScore() {
-    scoreDisplay.textContent = `分數: ${score}`;
-}
+
 
 function resetGame() {
     snake = [[200, 200], [160, 200], [120, 200]];
@@ -27,7 +28,6 @@ function resetGame() {
     currentDirection = 1;
     gameOver = false;
     score = 0;
-    updateScore();
     drawGame();
 }
 
@@ -62,7 +62,8 @@ function move() {
     if (isCollision(head)) {
         gameOver = true;
         clearInterval(gameLoop);
-        alert('遊戲結束！');
+        showMessage('遊戲結束！按下任何鍵重新開始');
+        submitScore();
         return;
     }
 
@@ -73,7 +74,7 @@ function move() {
     if (head[0] === food[0] && head[1] === food[1]) {
         food = spawnFood();
         score += 10;
-        updateScore();
+
     } else {
         snake.pop();
     }
@@ -127,4 +128,31 @@ document.addEventListener('keydown', event => {
     if (event.key === 'ArrowLeft' && currentDirection !== 1) currentDirection = 3;
 });
 
+function submitScore() {
+    fetch('/submit_score', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: playerName, score: score })
+    })
+    .then(() => {
+        getLeaderboard();
+    })
+    .catch(error => console.error('Error submitting score:', error));
+}
+
+function getLeaderboard() {
+    fetch('/get_leaderboard')
+        .then(response => response.json())
+        .then(data => {
+            leaderboardElement.innerHTML = '';
+            data.leaderboard.forEach(entry => {
+                const li = document.createElement('li');
+                li.textContent = `${entry.name}: ${entry.score}`;
+                leaderboardElement.appendChild(li);
+            });
+        })
+        .catch(error => console.error('Error fetching leaderboard:', error));
+}
+
 showMessage('按下任意鍵開始');
+getLeaderboard();
