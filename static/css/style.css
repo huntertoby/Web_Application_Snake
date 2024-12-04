@@ -5,12 +5,13 @@ body {
     margin: 0;
 }
 
-.container {
+.login-container {
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100vh; /* 垂直居中 */
+    margin-top: 80px; /* 調整頂部距離 */
 }
+
 
 .login-box {
     background-color: #ffffff;
@@ -70,11 +71,42 @@ button[type="submit"]:hover {
     color: white;
 }
 
+
+.game-container {
+    display: flex;
+    justify-content: space-between; /* 左右分佈 */
+    align-items: flex-start;
+    margin: 20px;
+}
+
+
+.sidebar-left {
+    width: 200px;
+    background-color: #f8f9fa;
+    border: 1px solid #ddd;
+    padding: 10px;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.sidebar-left h2 {
+    text-align: center;
+    margin-bottom: 10px;
+    color: #333;
+}
+
+.sidebar-left p {
+    font-size: 24px;
+    color: #555;
+    margin: 5px 0;
+}
+
 .main {
+    flex-grow: 1;
     display: flex;
     flex-direction: column;
     align-items: center;
-    margin-top: 20px;
+    margin: 0 20px;
 }
 
 #gameCanvas {
@@ -82,11 +114,16 @@ button[type="submit"]:hover {
 }
 
 .sidebar {
-    position: absolute;
-    right: 40px;
-    top: 100px;
     width: 200px;
+    background-color: #f8f9fa;
+    border: 1px solid #ddd;
+    padding: 10px;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    text-align: center;
 }
+
+
 
 .sidebar h2 {
     text-align: center;
@@ -111,3 +148,4 @@ button[type="submit"]:hover {
     font-weight: bold;
     margin-bottom: 10px;  /* 與畫布的距離 */
 }
+

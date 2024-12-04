@@ -9,16 +9,27 @@
     <div class="title">
         <h1>貪吃蛇遊戲</h1>
     </div>
-    <!-- 顯示分數 -->
-    <div id="scoreDisplay" class="score-display">
-        分數: 0
-    </div>
-    <div class="main">
-        <canvas id="gameCanvas" width="400" height="400"></canvas>
-    </div>
-    <div class="sidebar">
-        <h2>排行榜</h2>
-        <ul id="leaderboard"></ul>
+    <div class="game-container">
+        <!-- 左側遊戲說明欄 -->
+        <div class="sidebar-left">
+            <h2>遊戲說明</h2>
+            <p>1. 使用方向鍵操作蛇的移動。</p>
+            <p>2. 吃紅色方塊增加分數。</p>
+            <p>3. 避免碰到牆壁或自己的身體。</p>
+            <p>4. 分數越高，挑戰越刺激！</p>
+        </div>
+
+        <!-- 中間遊戲畫布 -->
+        <div class="main">
+            <canvas id="gameCanvas" width="720" height="720"></canvas>
+            <div id="scoreDisplay" class="score-display">分數: 0</div>
+        </div>
+
+        <!-- 右側排行榜 -->
+        <div class="sidebar">
+            <h2>排行榜</h2>
+            <ul id="leaderboard"></ul>
+        </div>
     </div>
     <script>
         var playerName = "{{ player_name }}";
