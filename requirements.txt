@@ -2,3 +2,4 @@ flask
 flask_session
 numpy
 gunicorn
+flask_sqlalchemy
