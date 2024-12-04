@@ -1,5 +1,4 @@
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify, flash
-
 from flask_session import Session
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -45,7 +44,6 @@ def login():
             return render_template('login.html')
     return render_template('login.html')
 
-
 # 註冊頁面
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -62,7 +60,6 @@ def register():
         flash("註冊成功，請登入", 'success')
         return redirect(url_for('login'))
     return render_template('register.html')
-
 
 # 遊戲頁面
 @app.route('/game')
@@ -94,7 +91,7 @@ def submit_score():
 # 獲取排行榜
 @app.route('/get_leaderboard')
 def get_leaderboard():
-    leaderboard_entries = Leaderboard.query.order_by(Leaderboard.score.desc()).all()
+    leaderboard_entries = Leaderboard.query.order_by(Leaderboard.score.desc()).limit(10).all()
     leaderboard_list = []
     for entry in leaderboard_entries:
         user = User.query.get(entry.user_id)

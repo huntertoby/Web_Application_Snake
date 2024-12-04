@@ -1,170 +1,302 @@
-const canvas = document.getElementById('gameCanvas');
-const ctx = canvas.getContext('2d');
-const leaderboardElement = document.getElementById('leaderboard');
-let scoreDisplay = document.getElementById('scoreDisplay');  // 找到顯示分數的元素
+    // game.js
 
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
 
-let snake = [[200, 200], [160, 200], [120, 200]];
-let food = [320, 200];
-let cellSize = 40;
-let currentDirection = 1;
-let gameLoop;
-let gameOver = false;
-let score = 0;
-let gameStarted = false;
+    const gridSize = 40;
+    const tileCountX = canvas.width / gridSize;
+    const tileCountY = canvas.height / gridSize;
 
+    let snake = [
+        { x: gridSize * 3, y: 0 },
+        { x: gridSize * 2, y: 0 },
+        { x: gridSize, y: 0 }
+    ];
+    let direction = 'right';
+    let food = {};
+    let specialFoods = [];
+    let score = 0;
 
-function startGame() {
-    resetGame();
-    gameLoop = setInterval(() => move(), 150);
-    gameStarted = true; //
+    const FOOD_TYPES = {
+        NORMAL: { color: 'red', effect: 'normal' },
+        SPEED_UP: { color: 'green', effect: 'speed_up' },
+        SLOW_DOWN: { color: 'blue', effect: 'slow_down' },
+        POISON: { color: 'purple', effect: 'poison' },
+        DOUBLE_SCORE: { color: 'gold', effect: 'double_score' }
+    };
 
-}
+    let speed = 200;
+    let originalSpeed = 200;
+    let gameInterval;
+    let speedUpActive = false;
+    let slowDownActive = false;
+    let doubleScoreActive = false;
+    let effectTimeout;
 
+    function init() {
+        generateFood();
+        startGameLoop();
+        document.addEventListener('keydown', keyDownEvent);
+        updateScoreDisplay();
+        fetchLeaderboard();
+    }
 
+    function generateFood() {
+        let x = Math.floor(Math.random() * tileCountX) * gridSize;
+        let y = Math.floor(Math.random() * tileCountY) * gridSize;
 
-function resetGame() {
-    snake = [[200, 200], [160, 200], [120, 200]];
-    food = spawnFood();
-    currentDirection = 1;
-    gameOver = false;
-    score = 0;
-    drawGame();
-}
+        while (snake.some(segment => segment.x === x && segment.y === y) ||
+               specialFoods.some(f => f.x === x && f.y === y)) {
+            x = Math.floor(Math.random() * tileCountX) * gridSize;
+            y = Math.floor(Math.random() * tileCountY) * gridSize;
+        }
 
+        food = {
+            x: x,
+            y: y,
+            color: FOOD_TYPES.NORMAL.color,
+            effect: FOOD_TYPES.NORMAL.effect
+        };
+    }
 
-function spawnFood() {
-    while (true) {
-        const x = Math.floor(Math.random() * (canvas.width / cellSize)) * cellSize;
-        const y = Math.floor(Math.random() * (canvas.height / cellSize)) * cellSize;
+    function generateSpecialFood() {
+    const chance = Math.random();
+    if (chance < 0.5) {
+        const numSpecialFoods = Math.floor(Math.random() * 3) + 1; // 1 到 3
+        for (let i = 0; i < numSpecialFoods; i++) {
+            const foodTypes = [FOOD_TYPES.SPEED_UP, FOOD_TYPES.SLOW_DOWN, FOOD_TYPES.POISON, FOOD_TYPES.DOUBLE_SCORE];
+            const randomIndex = Math.floor(Math.random() * foodTypes.length);
+            const type = foodTypes[randomIndex];
 
-        // 確保食物不生成在蛇身上
-        if (!snake.some(segment => segment[0] === x && segment[1] === y)) {
-            return [x, y];
+            let x = Math.floor(Math.random() * tileCountX) * gridSize;
+            let y = Math.floor(Math.random() * tileCountY) * gridSize;
+
+            while (snake.some(segment => segment.x === x && segment.y === y) ||
+                   specialFoods.some(f => f.x === x && f.y === y) ||
+                   (food.x === x && food.y === y)) {
+                x = Math.floor(Math.random() * tileCountX) * gridSize;
+                y = Math.floor(Math.random() * tileCountY) * gridSize;
+            }
+
+            const specialFood = {
+                x: x,
+                y: y,
+                color: type.color,
+                effect: type.effect
+            };
+
+            specialFoods.push(specialFood);
+
+            setTimeout(() => {
+                specialFoods = specialFoods.filter(f => f !== specialFood);
+            }, 10000);
         }
     }
 }
 
 
+    function startGameLoop() {
+        clearInterval(gameInterval);
+        gameInterval = setInterval(() => {
+            update();
+            draw();
+        }, speed);
+    }
 
-// 蛇移動邏輯
-function move() {
-    if (gameOver) return;
+    function update() {
+        const head = { ...snake[0] };
+        switch (direction) {
+            case 'left':
+                head.x -= gridSize;
+                break;
+            case 'up':
+                head.y -= gridSize;
+                break;
+            case 'right':
+                head.x += gridSize;
+                break;
+            case 'down':
+                head.y += gridSize;
+                break;
+        }
 
-    const head = [...snake[0]];
+        if (head.x < 0 || head.x >= canvas.width || head.y < 0 || head.y >= canvas.height) {
+            gameOver();
+            return;
+        }
 
-    // 根據方向更新蛇頭的位置
-    if (currentDirection === 0) head[1] -= cellSize; // 上
-    if (currentDirection === 1) head[0] += cellSize; // 右
-    if (currentDirection === 2) head[1] += cellSize; // 下
-    if (currentDirection === 3) head[0] -= cellSize; // 左
+        if (snake.some(segment => segment.x === head.x && segment.y === head.y)) {
+            gameOver();
+            return;
+        }
 
-    // 檢查碰撞
-    if (isCollision(head)) {
-        gameOver = true;
-        clearInterval(gameLoop);
-        showMessage('遊戲結束！按下任何鍵重新開始');
+        snake.unshift(head);
+
+        if (head.x === food.x && head.y === food.y) {
+            score += doubleScoreActive ? 2 : 1;
+            updateScoreDisplay();
+            generateFood();
+            generateSpecialFood();
+        } else {
+            snake.pop();
+        }
+        for (let i = 0; i < specialFoods.length; i++) {
+            const specialFood = specialFoods[i];
+            if (head.x === specialFood.x && head.y === specialFood.y) {
+                handleFoodEffect(specialFood.effect);
+                specialFoods.splice(i, 1); // 移除已經吃掉的特殊食物
+                break;
+            }
+        }
+    }
+
+    function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        snake.forEach((segment, index) => {
+            let x = segment.x;
+            let y = segment.y;
+            let gradient = ctx.createLinearGradient(x, y, x + gridSize, y + gridSize);
+            let colorValue = Math.floor(255 * (index / snake.length));
+            let startColor = `rgb(0, ${255 - colorValue}, 0)`;
+            let endColor = `rgb(0, ${255 - colorValue * 0.5}, 0)`;
+
+            gradient.addColorStop(0, startColor);
+            gradient.addColorStop(1, endColor);
+
+            ctx.fillStyle = gradient;
+            ctx.fillRect(x, y, gridSize, gridSize);
+        });
+
+        ctx.fillStyle = food.color;
+        ctx.fillRect(food.x, food.y, gridSize, gridSize);
+
+        specialFoods.forEach(specialFood => {
+            ctx.fillStyle = specialFood.color;
+            ctx.fillRect(specialFood.x, specialFood.y, gridSize, gridSize);
+        });
+    }
+
+    function keyDownEvent(e) {
+        switch (e.keyCode) {
+            case 37:
+                if (direction !== 'right') direction = 'left';
+                break;
+            case 38:
+                if (direction !== 'down') direction = 'up';
+                break;
+            case 39:
+                if (direction !== 'left') direction = 'right';
+                break;
+            case 40:
+                if (direction !== 'up') direction = 'down';
+                break;
+        }
+    }
+
+    function handleFoodEffect(effect) {
+        clearTimeout(effectTimeout);
+
+        switch (effect) {
+            case 'speed_up':
+                speedUpActive = true;
+                slowDownActive = false;
+                speed = originalSpeed / 2; // 加速
+                startGameLoop();
+                effectTimeout = setTimeout(() => {
+                    speedUpActive = false;
+                    speed = originalSpeed;
+                    startGameLoop();
+                }, 5000);
+                break;
+            case 'slow_down':
+                slowDownActive = true;
+                speedUpActive = false;
+                speed = originalSpeed * 1.5; // 減速
+                startGameLoop();
+                effectTimeout = setTimeout(() => {
+                    slowDownActive = false;
+                    speed = originalSpeed;
+                    startGameLoop();
+                }, 5000);
+                break;
+            case 'double_score':
+                doubleScoreActive = true;
+                effectTimeout = setTimeout(() => {
+                    doubleScoreActive = false;
+                }, 10000);
+                break;
+            case 'poison':
+                gameOver();
+                break;
+        }
+    }
+
+    function gameOver() {
+        clearInterval(gameInterval);
+        alert("遊戲結束！您的分數是：" + score);
+        // 提交分數
         submitScore();
-        return;
+        // 重置遊戲
+        resetGame();
     }
 
-    // 將蛇頭插入蛇陣列
-    snake.unshift(head);
-
-    // 檢查是否吃到食物
-    if (head[0] === food[0] && head[1] === food[1]) {
-        food = spawnFood();
-        score += 10;
-
-    } else {
-        snake.pop();
+    function resetGame() {
+        snake = [
+            { x: gridSize * 3, y: 0 },
+            { x: gridSize * 2, y: 0 },
+            { x: gridSize, y: 0 }
+        ];
+        direction = 'right';
+        score = 0;
+        updateScoreDisplay();
+        speed = originalSpeed;
+        speedUpActive = false;
+        slowDownActive = false;
+        doubleScoreActive = false;
+        specialFoods = [];
+        generateFood();
+        startGameLoop();
     }
 
-    drawGame();
-}
-
-// 碰撞檢測
-function isCollision(head) {
-
-    if (head[0] < 0 || head[1] < 0 || head[0] >= canvas.width || head[1] >= canvas.height) {
-        return true;
+    function updateScoreDisplay() {
+        document.getElementById('scoreDisplay').textContent = "分數: " + score;
     }
-    return snake.slice(1).some(segment => segment[0] === head[0] && segment[1] === head[1]);
-}
 
-function drawGame() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    snake.forEach((segment, index) => {
-        let gradient = ctx.createLinearGradient(segment[0], segment[1], segment[0] + cellSize, segment[1] + cellSize);
-        let colorValue = Math.floor(255 * (index / snake.length));
-        let startColor = `rgb(${0}, ${255 - colorValue}, ${0})`;
-        let endColor = `rgb(${0}, ${255 - colorValue * 0.5}, ${0})`;
-
-        gradient.addColorStop(0, startColor);
-        gradient.addColorStop(1, endColor);
-
-        ctx.fillStyle = gradient;
-        ctx.fillRect(segment[0], segment[1], cellSize, cellSize);
-    });
-
-    ctx.fillStyle = "#FF0000";
-    ctx.fillRect(food[0], food[1], cellSize, cellSize);
-
-    scoreDisplay.textContent = '分數: ' + score;
-}
-
-
-
-
-
-function showMessage(message) {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.fillStyle = '#000000';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    ctx.fillStyle = '#FFFFFF';
-    ctx.font = '24px Arial';
-    ctx.textAlign = 'center';
-    ctx.fillText(message, canvas.width / 2, canvas.height / 2);
-}
-
-
-document.addEventListener('keydown', event => {
-    if (!gameStarted || gameOver) {
-        startGame();
-        return;
-    }
-    if (event.key === 'ArrowUp' && currentDirection !== 2) currentDirection = 0;
-    if (event.key === 'ArrowRight' && currentDirection !== 3) currentDirection = 1;
-    if (event.key === 'ArrowDown' && currentDirection !== 0) currentDirection = 2;
-    if (event.key === 'ArrowLeft' && currentDirection !== 1) currentDirection = 3;
-});
-
-function submitScore() {
-    fetch('/submit_score', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: playerName, score: score })
-    })
-    .then(() => {
-        getLeaderboard();
-    })
-    .catch(error => console.error('Error submitting score:', error));
-}
-
-function getLeaderboard() {
-    fetch('/get_leaderboard')
+    function submitScore() {
+        fetch('/submit_score', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ score: score })
+        })
         .then(response => response.json())
         .then(data => {
-            leaderboardElement.innerHTML = '';
-            data.leaderboard.forEach(entry => {
-                const li = document.createElement('li');
-                li.textContent = `${entry.name}: ${entry.score}`;
-                leaderboardElement.appendChild(li);
-            });
-        })
-        .catch(error => console.error('Error fetching leaderboard:', error));
-}
+            if (data.success) {
+                // 更新排行榜
+                fetchLeaderboard();
+            } else {
+                // 處理錯誤
+                alert(data.error);
+            }
+        });
+    }
 
-showMessage('按下任意鍵開始');
-getLeaderboard();
+    function fetchLeaderboard() {
+        fetch('/get_leaderboard')
+            .then(response => response.json())
+            .then(data => {
+                const leaderboard = data.leaderboard;
+                const leaderboardElement = document.getElementById('leaderboard');
+                leaderboardElement.innerHTML = '';
+                leaderboard.forEach(entry => {
+                    const li = document.createElement('li');
+                    li.textContent = `${entry.name}: ${entry.score}`;
+                    leaderboardElement.appendChild(li);
+                });
+            });
+    }
+
+    // 啟動遊戲
+    init();
